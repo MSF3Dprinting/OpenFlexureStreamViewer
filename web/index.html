@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenFlexure Camera Viewer</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="viewer-card" aria-label="OpenFlexure camera viewer">
+      <header class="viewer-header">
+        <div>
+          <p class="eyebrow">OpenFlexure Microscope</p>
+          <h1>Live Camera Stream</h1>
+        </div>
+        <p class="status" id="status">Connecting to camera stream…</p>
+      </header>
+
+      <div class="stream-frame">
+        <img id="stream" src="/camera/mjpeg_stream" alt="Live camera stream">
+      </div>
+
+      <footer class="toolbar">
+        <button id="savePhoto" type="button" disabled>Save photo</button>
+      </footer>
+    </section>
+  </main>
+
+  <canvas id="captureCanvas" hidden></canvas>
+  <script src="/app.js" defer></script>
+</body>
+</html>
