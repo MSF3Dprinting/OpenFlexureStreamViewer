@@ -35,6 +35,13 @@ sudo systemctl enable --now openflexure-stream-viewer.service
 
 The viewer will start automatically whenever the microscope boots.
 
+To verify it is active, use:
+
+```bash
+systemctl status openflexure-stream-viewer.service
+journalctl -u openflexure-stream-viewer.service -f
+```
+
 ## Run manually
 
 If you want to test it without systemd, run it directly on the microscope:
@@ -71,6 +78,8 @@ python3 openflexure_stream_viewer.py --upstream http://127.0.0.1:5001 --port 808
 ## Notes
 
 No extra Python packages are required. The service uses only the Python standard library and is intended to run on the microscope device itself.
+
+The systemd unit runs as `openflexure-ws`, which matches the microscope web-service account used by the OpenFlexure installation.
 
 If you want to keep it isolated, you can still create a virtual environment:
 

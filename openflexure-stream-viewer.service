@@ -6,8 +6,8 @@ Requires=openflexure-microscope-server.service
 
 [Service]
 Type=simple
-User=openflexure
-Group=openflexure
+User=openflexure-ws
+Group=openflexure-ws
 WorkingDirectory=/var/openflexure/application/openflexure-stream-viewer
 ExecStart=/usr/bin/python3 /var/openflexure/application/openflexure-stream-viewer/openflexure_stream_viewer.py --host 0.0.0.0 --port 8080 --upstream http://127.0.0.1:5000 --capture-dir /var/lib/openflexure-stream-viewer/captures
 Restart=on-failure
