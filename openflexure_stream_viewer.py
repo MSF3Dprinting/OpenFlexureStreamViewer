@@ -18,7 +18,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.error import URLError
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 from urllib.request import Request, urlopen
 
 
@@ -46,21 +46,26 @@ class ViewerRequestHandler(SimpleHTTPRequestHandler):
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
         sys.stderr.write("%s - - [%s] %s\n" % (self.address_string(), self.log_date_time_string(), format % args))
 
+    def _request_path(self) -> str:
+        return urlsplit(self.path).path
+
     def do_GET(self) -> None:  # noqa: N802
-        if self.path in {"/", "/index.html"}:
+        request_path = self._request_path()
+
+        if request_path in {"/", "/index.html"}:
             self.path = "/index.html"
             return super().do_GET()
 
-        if self.path == "/healthz":
+        if request_path == "/healthz":
             return _send_json(self, HTTPStatus.OK, {"ok": True, "upstream": self.upstream_base})
 
-        if self.path == "/camera/mjpeg_stream":
+        if request_path == "/camera/mjpeg_stream":
             return self._proxy_mjpeg_stream()
 
         return super().do_GET()
 
     def do_HEAD(self) -> None:  # noqa: N802
-        if self.path in {"/", "/index.html"}:
+        if self._request_path() in {"/", "/index.html"}:
             self.path = "/index.html"
         return super().do_HEAD()
 
@@ -106,6 +111,7 @@ class ViewerRequestHandler(SimpleHTTPRequestHandler):
 
 
     def translate_path(self, path: str) -> str:
+        path = urlsplit(path).path
         if path == "/":
             path = "/index.html"
         if path in {"/index.html", "/style.css", "/app.js"}:
