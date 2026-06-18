@@ -1,6 +1,8 @@
 const stream = document.getElementById('stream');
 const saveButton = document.getElementById('savePhoto');
 const status = document.getElementById('status');
+const captureCanvas = document.getElementById('captureCanvas');
+const captureContext = captureCanvas.getContext('2d');
 let streamReady = false;
 
 function setStatus(message) {
@@ -27,17 +29,33 @@ saveButton.addEventListener('click', async () => {
   }
 
   saveButton.disabled = true;
-  setStatus('Saving photo on the microscope…');
+  setStatus('Saving photo to this computer…');
 
   try {
-    const response = await fetch('/capture', { method: 'POST' });
-    const payload = await response.json();
+    captureCanvas.width = stream.naturalWidth;
+    captureCanvas.height = stream.naturalHeight;
+    captureContext.drawImage(stream, 0, 0, captureCanvas.width, captureCanvas.height);
 
-    if (!response.ok || !payload.ok) {
-      throw new Error(payload.error || 'Unable to save the photo');
-    }
+    const blob = await new Promise((resolve, reject) => {
+      captureCanvas.toBlob((result) => {
+        if (result) {
+          resolve(result);
+          return;
+        }
 
-    setStatus(`Photo saved on the microscope as ${payload.filename}`);
+        reject(new Error('Could not capture the current frame.'));
+      }, 'image/png');
+    });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = `openflexure-photo-${timestamp}.png`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    URL.revokeObjectURL(downloadLink.href);
+    setStatus('Photo saved to this computer');
   } catch (error) {
     console.error(error);
     setStatus(error instanceof Error ? error.message : 'Unable to save the photo');

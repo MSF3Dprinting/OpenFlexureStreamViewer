@@ -1,6 +1,6 @@
 # OpenFlexure Stream Viewer
 
-This folder contains a small standalone web service for the OpenFlexure Microscope. It runs on the microscope itself on a separate port, starts automatically as a service, shows only the live camera stream, and provides a single action: save the current frame as a photo on the microscope storage.
+This folder contains a small standalone web service for the OpenFlexure Microscope. It runs on the microscope itself on a separate port, starts automatically as a service, shows only the live camera stream, and provides a single action: save the current frame as a photo on the viewer computer.
 
 The viewer does not replace the main microscope server. It proxies the existing camera MJPEG stream from the regular OpenFlexure server, which by default is available locally on port `5000` as `/camera/mjpeg_stream`.
 
@@ -10,7 +10,7 @@ The implementation follows the OpenFlexure Microscope Server documentation and t
 
 ## Files
 
-- `openflexure_stream_viewer.py` - Python service that serves the page, proxies the stream, and saves photos locally on the microscope.
+- `openflexure_stream_viewer.py` - Python service that serves the page and proxies the stream.
 - `openflexure-stream-viewer.service` - systemd unit for automatic startup on Linux.
 - `web/index.html` - Minimal page markup.
 - `web/style.css` - Responsive styling.
@@ -47,7 +47,7 @@ journalctl -u openflexure-stream-viewer.service -f
 If you want to test it without systemd, run it directly on the microscope:
 
 ```bash
-python3 openflexure_stream_viewer.py --host 0.0.0.0 --port 8080 --upstream http://127.0.0.1:5000 --capture-dir ./captures
+python3 openflexure_stream_viewer.py --host 0.0.0.0 --port 8080 --upstream http://127.0.0.1:5000
 ```
 
 Then open:
@@ -66,13 +66,12 @@ If the main microscope server listens on a different local port, change `--upstr
 
 - `--host` - Address to bind to. Default: `0.0.0.0`.
 - `--port` - Port for the viewer. Default: `8080`.
-- `--capture-dir` - Directory used to save photos. Default: `./captures`.
 - `--upstream` - Base URL of the regular OpenFlexure server on the microscope. Default: `http://127.0.0.1:5000`.
 
 Example when the main microscope server uses a different local port:
 
 ```bash
-python3 openflexure_stream_viewer.py --upstream http://127.0.0.1:5001 --port 8081 --capture-dir ./captures
+python3 openflexure_stream_viewer.py --upstream http://127.0.0.1:5001 --port 8081
 ```
 
 ## Notes
@@ -86,12 +85,12 @@ If you want to keep it isolated, you can still create a virtual environment:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python3 openflexure_stream_viewer.py --upstream http://127.0.0.1:5000 --port 8080 --capture-dir ./captures
+python3 openflexure_stream_viewer.py --upstream http://127.0.0.1:5000 --port 8080
 ```
 
 ## Behavior
 
 - The page shows only the live camera stream.
 - The camera stream is proxied through the viewer so the page can capture the current frame without cross-origin issues.
-- Clicking **Save photo** stores a JPEG on the microscope under `captures/`.
+- Clicking **Save photo** downloads a PNG to the viewer computer.
 - The layout is responsive and adapts to smaller screens.

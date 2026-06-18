@@ -9,7 +9,6 @@ the microscope storage.
 from __future__ import annotations
 
 import argparse
-import datetime
 import json
 import mimetypes
 import sys
@@ -25,7 +24,6 @@ from urllib.request import Request, urlopen
 
 BASE_DIR = Path(__file__).resolve().parent
 WEB_DIR = BASE_DIR / "web"
-CAPTURE_DIR = BASE_DIR / "captures"
 DEFAULT_UPSTREAM = "http://127.0.0.1:5000"
 
 
@@ -36,34 +34,6 @@ def _send_json(handler: SimpleHTTPRequestHandler, status: HTTPStatus, payload: d
     handler.send_header("Content-Length", str(len(body)))
     handler.end_headers()
     handler.wfile.write(body)
-
-
-def _capture_jpeg_frame(stream: Any) -> bytes:
-    buffer = bytearray()
-
-    while True:
-        chunk = stream.read(8192)
-        if not chunk:
-            break
-
-        buffer.extend(chunk)
-        start = buffer.find(b"\xff\xd8")
-        if start == -1:
-            if len(buffer) > 2_000_000:
-                del buffer[:-2]
-            continue
-
-        if start > 0:
-            del buffer[:start]
-
-        end = buffer.find(b"\xff\xd9", 2)
-        if end != -1:
-            return bytes(buffer[: end + 2])
-
-        if len(buffer) > 2_000_000:
-            del buffer[:-2]
-
-    raise RuntimeError("Unable to capture a JPEG frame from the stream.")
 
 
 class ViewerRequestHandler(SimpleHTTPRequestHandler):
@@ -87,15 +57,7 @@ class ViewerRequestHandler(SimpleHTTPRequestHandler):
         if self.path == "/camera/mjpeg_stream":
             return self._proxy_mjpeg_stream()
 
-        if self.path == "/capture":
-            return self._capture_photo()
-
         return super().do_GET()
-
-    def do_POST(self) -> None:  # noqa: N802
-        if self.path == "/capture":
-            return self._capture_photo()
-        self.send_error(HTTPStatus.NOT_FOUND, "Unknown endpoint")
 
     def do_HEAD(self) -> None:  # noqa: N802
         if self.path in {"/", "/index.html"}:
@@ -142,38 +104,6 @@ class ViewerRequestHandler(SimpleHTTPRequestHandler):
         finally:
             upstream.close()
 
-    def _capture_photo(self) -> None:
-        upstream_url = urljoin(f"{self.upstream_base}/", "camera/mjpeg_stream")
-        request = Request(upstream_url, headers={"User-Agent": self.headers.get("User-Agent", self.server_version)})
-
-        try:
-            upstream = urlopen(request, timeout=10)
-        except URLError as exc:
-            message = {"error": "Unable to connect to the OpenFlexure camera stream.", "detail": str(exc)}
-            return _send_json(self, HTTPStatus.BAD_GATEWAY, message)
-
-        try:
-            frame = _capture_jpeg_frame(upstream)
-            CAPTURE_DIR.mkdir(parents=True, exist_ok=True)
-            timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-            filename = f"openflexure-photo-{timestamp}.jpg"
-            capture_path = CAPTURE_DIR / filename
-            capture_path.write_bytes(frame)
-
-            return _send_json(
-                self,
-                HTTPStatus.OK,
-                {
-                    "ok": True,
-                    "filename": filename,
-                    "path": str(capture_path),
-                    "upstream": self.upstream_base,
-                },
-            )
-        except RuntimeError as exc:
-            return _send_json(self, HTTPStatus.BAD_GATEWAY, {"error": str(exc)})
-        finally:
-            upstream.close()
 
     def translate_path(self, path: str) -> str:
         if path == "/":
@@ -197,11 +127,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--host", default="0.0.0.0", help="Interface to bind to. Default: 0.0.0.0")
     parser.add_argument("--port", type=int, default=8080, help="Port to listen on. Default: 8080")
     parser.add_argument(
-        "--capture-dir",
-        default=str(CAPTURE_DIR),
-        help="Directory used to store captured photos. Default: ./captures",
-    )
-    parser.add_argument(
         "--upstream",
         default=DEFAULT_UPSTREAM,
         help="Base URL of the main OpenFlexure server. Default: http://127.0.0.1:5000",
@@ -211,11 +136,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_parser().parse_args()
-    capture_dir = Path(args.capture_dir)
     handler = partial(ViewerRequestHandler, directory=str(WEB_DIR), upstream_base=args.upstream)
     server = ThreadingHTTPServer((args.host, args.port), handler)
-    global CAPTURE_DIR
-    CAPTURE_DIR = capture_dir
     print(f"Serving the OpenFlexure stream viewer on http://{args.host}:{args.port}")
     print(f"Proxying the camera stream from {args.upstream.rstrip('/')}/camera/mjpeg_stream")
 

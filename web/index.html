@@ -8,18 +8,30 @@
 </head>
 <body>
   <main class="shell">
-    <section class="viewer-card" aria-label="OpenFlexure camera viewer">
-      <header class="viewer-header">
-        <div>
-          <p class="eyebrow">OpenFlexure Microscope</p>
-          <h1>Live Camera Stream</h1>
+    <section class="viewer-app" aria-label="OpenFlexure camera viewer">
+      <header class="app-header">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 64 64" role="img" focusable="false">
+              <rect x="10" y="10" width="44" height="44" rx="14"></rect>
+              <path d="M20 34c7-11 17-11 24 0" fill="none"></path>
+              <path d="M22 27h20" fill="none"></path>
+              <circle cx="32" cy="34" r="5"></circle>
+            </svg>
+          </div>
+          <div>
+            <p class="eyebrow">OpenFlexure Microscope</p>
+            <h1>Camera Stream</h1>
+          </div>
         </div>
         <p class="status" id="status">Connecting to camera stream…</p>
       </header>
 
-      <div class="stream-frame">
-        <img id="stream" src="/camera/mjpeg_stream" alt="Live camera stream">
-      </div>
+      <section class="stream-panel">
+        <div class="stream-frame">
+          <img id="stream" src="/camera/mjpeg_stream" alt="Live camera stream">
+        </div>
+      </section>
 
       <footer class="toolbar">
         <button id="savePhoto" type="button" disabled>Save photo</button>
