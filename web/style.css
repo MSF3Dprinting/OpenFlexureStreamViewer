@@ -100,14 +100,29 @@ h1 {
   height: 100%;
 }
 
-.brand-mark rect,
-.brand-mark circle,
-.brand-mark path {
+.brand-shape,
+.brand-hole,
+.brand-cut {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 3.4;
+  stroke-width: 5.4;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.brand-shape {
+  fill: #ffffff;
+  stroke: #ffffff;
+}
+
+.brand-hole {
+  fill: #f1f4f8;
+  stroke: #f1f4f8;
+}
+
+.brand-cut {
+  fill: #ffffff;
+  stroke: #ffffff;
 }
 
 .status {
@@ -223,5 +238,25 @@ button:disabled {
 
   #stream {
     max-height: calc(100vh - 210px);
+  }
+}
+
+@media (max-width: 1024px) and (orientation: landscape) {
+  .shell {
+    padding: 8px;
+  }
+
+  .viewer-app {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .stream-frame {
+    min-height: calc(100dvh - 126px);
+    padding: 8px;
+  }
+
+  #stream {
+    max-height: calc(100dvh - 142px);
   }
 }
