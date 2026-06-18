@@ -6,15 +6,13 @@ const captureContext = captureCanvas.getContext('2d');
 let streamReady = false;
 let retryTimer = null;
 
-function refreshStream() {
+function retryStream() {
   window.clearTimeout(retryTimer);
-  streamReady = false;
-  saveButton.disabled = true;
-  stream.removeAttribute('src');
-
-  window.setTimeout(() => {
+  retryTimer = window.setTimeout(() => {
+    streamReady = false;
+    saveButton.disabled = true;
     stream.src = '/camera/mjpeg_stream';
-  }, 120);
+  }, 5000);
 }
 
 function setStatus(message) {
@@ -32,18 +30,8 @@ stream.addEventListener('error', () => {
   streamReady = false;
   saveButton.disabled = true;
   setStatus('Camera stream unavailable');
-  window.clearTimeout(retryTimer);
-  retryTimer = window.setTimeout(refreshStream, 5000);
+  retryStream();
 });
-
-window.addEventListener('pageshow', refreshStream);
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    refreshStream();
-  }
-});
-
-stream.src = '/camera/mjpeg_stream';
 
 saveButton.addEventListener('click', async () => {
   if (!streamReady || !stream.naturalWidth || !stream.naturalHeight) {

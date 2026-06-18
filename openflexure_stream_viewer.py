@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Minimal OpenFlexure camera viewer.
 
-This serves a small web page on a separate port on the microscope itself,
-proxies the microscope camera MJPEG stream, and saves the current frame on
-the microscope storage.
+This serves a small web page on a separate port on the microscope itself and
+proxies the microscope camera MJPEG stream.
 """
 
 from __future__ import annotations
@@ -114,7 +113,7 @@ class ViewerRequestHandler(SimpleHTTPRequestHandler):
         path = urlsplit(path).path
         if path == "/":
             path = "/index.html"
-        if path in {"/index.html", "/style.css", "/app.js"}:
+        if path in {"/index.html", "/style.css", "/app.js", "/titleiconpink.svg"}:
             return str(WEB_DIR / path.lstrip("/"))
         return super().translate_path(path)
 
@@ -125,6 +124,8 @@ class ViewerRequestHandler(SimpleHTTPRequestHandler):
             return "text/css"
         if path.endswith(".html"):
             return "text/html"
+        if path.endswith(".svg"):
+            return "image/svg+xml"
         return mimetypes.guess_type(path)[0] or "application/octet-stream"
 
 
