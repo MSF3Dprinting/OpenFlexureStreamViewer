@@ -4,6 +4,8 @@ This folder contains a small standalone web service for the OpenFlexure Microsco
 
 The viewer does not replace the main microscope server. It proxies the existing camera MJPEG stream from the regular OpenFlexure server, which by default is available locally on port `5000` as `/camera/mjpeg_stream`.
 
+![OpenFlexure Stream Viewer interface on a mobile phone displaying a live camera stream in the center with a pink Save photo button at the bottom right. The dark interface shows the microscope logo in the top left corner, a gray camera feed area, and system indicators at the top of the phone screen. The layout is responsive and optimized for mobile viewing.](images/stream_viewer_1.jpg)
+
 ## What it uses from the official OpenFlexure server
 
 The implementation follows the OpenFlexure Microscope Server documentation and the regular stream endpoint used by the main web interface.
